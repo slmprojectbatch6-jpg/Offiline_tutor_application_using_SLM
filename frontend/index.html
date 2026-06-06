@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vidhya Mitra</title>
+  <meta name="description"
+    content="Offline personalized NCERT tutor powered by Phi-3 AI. Study History, Polity, Geography, Economics, and General Knowledge for Classes 6-10." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     AUTH SCREEN (Login / Register)
+════════════════════════════════════════════════════════════════ -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-bg">
+      <div class="auth-orb orb-1"></div>
+      <div class="auth-orb orb-2"></div>
+      <div class="auth-orb orb-3"></div>
+    </div>
+
+    <div class="auth-container">
+      <!-- Brand -->
+      <div class="auth-brand">
+        <div class="brand-icon">🎓</div>
+        <h1 class="brand-title">Vidhya Mitra</h1>
+        <p class="brand-sub">Offline Tutor Application</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+        <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input id="login-username" type="text" class="form-input" placeholder="Enter your username" required
+              autocomplete="username" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input id="login-password" type="password" class="form-input" placeholder="Enter your password" required
+              autocomplete="current-password" />
+          </div>
+        </div>
+        <div id="login-error" class="form-error hidden"></div>
+        <button type="submit" class="btn-primary btn-full" id="login-btn">
+          <span class="btn-text">Login</span>
+          <span class="btn-loader hidden">⟳</span>
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <div class="input-wrap">
+              <span class="input-icon">✏️</span>
+              <input id="reg-fullname" type="text" class="form-input" placeholder="Your full name" required
+                minlength="2" maxlength="100" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input id="reg-username" type="text" class="form-input" placeholder="Choose username" required
+                minlength="3" maxlength="30" />
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input id="reg-password" type="password" class="form-input" placeholder="Password" required
+                minlength="4" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Class (6-10)</label>
+            <div class="input-wrap">
+              <span class="input-icon">📚</span>
+              <select id="reg-class" class="form-input form-select">
+                <option value="">Select class</option>
+                <option value="6">Class 6</option>
+                <option value="7">Class 7</option>
+                <option value="8">Class 8</option>
+                <option value="9">Class 9</option>
+                <option value="10">Class 10</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="register-error" class="form-error hidden"></div>
+        <button type="submit" class="btn-primary btn-full" id="register-btn">
+          <span class="btn-text">Create Account</span>
+          <span class="btn-loader hidden">⟳</span>
+        </button>
+      </form>
+
+      <p class="auth-footer">Fully Offline • Powered by Phi-3 + FAISS</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     MAIN APP SCREEN
+════════════════════════════════════════════════════════════════ -->
+  <div id="app-screen" class="screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-icon">🎓</span>
+          <span class="sidebar-brand-text">Vidhya Mitra</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <button class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" id="nav-chat" onclick="showPage('chat')">
+          <span class="nav-icon">💬</span>
+          <span class="nav-label">Ask Tutor</span>
+        </button>
+        <button class="nav-item" id="nav-history" onclick="showPage('history')">
+          <span class="nav-icon">📜</span>
+          <span class="nav-label">History</span>
+        </button>
+        <button class="nav-item" id="nav-subjects" onclick="showPage('subjects')">
+          <span class="nav-icon">📖</span>
+          <span class="nav-label">Subjects</span>
+        </button>
+      </nav>
+
+      <!-- Subject Filters -->
+      <div class="sidebar-section">
+        <p class="sidebar-section-title">SUBJECTS</p>
+        <div class="subject-pills">
+          <button class="subject-pill" data-subject="" onclick="setSubjectFilter('')">All</button>
+          <button class="subject-pill" data-subject="history" onclick="setSubjectFilter('history')">🏛️ History</button>
+          <button class="subject-pill" data-subject="polity" onclick="setSubjectFilter('polity')">⚖️ Polity</button>
+          <button class="subject-pill" data-subject="geography" onclick="setSubjectFilter('geography')">🌏
+            Geography</button>
+          <button class="subject-pill" data-subject="economics" onclick="setSubjectFilter('economics')">📊
+            Economics</button>
+          <button class="subject-pill" data-subject="gk" onclick="setSubjectFilter('gk')">🧠 General Knowledge</button>
+        </div>
+      </div>
+
+      <!-- Recent Sessions -->
+      <div class="sidebar-section sidebar-sessions">
+        <p class="sidebar-section-title">RECENT CHATS</p>
+        <div id="recent-sessions" class="session-list">
+          <p class="session-empty">No chats yet</p>
+        </div>
+        <button class="btn-new-chat" onclick="startNewChat()">+ New Chat</button>
+      </div>
+
+      <!-- User -->
+      <div class="sidebar-user" id="sidebar-user">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-info">
+          <p class="user-name" id="sidebar-username">—</p>
+          <p class="user-class" id="sidebar-class">—</p>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()" title="Logout">⎋</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- ── DASHBOARD PAGE ────────────────────────────────── -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title" id="welcome-msg">Welcome back! 👋</h2>
+            <p class="page-sub">Your learning dashboard</p>
+          </div>
+          <div class="header-actions">
+            <div class="status-badge" id="system-status">
+              <span class="status-dot"></span>
+              <span id="status-text">Checking...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card card-blue">
+            <div class="stat-icon">💬</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-questions">0</p>
+              <p class="stat-label">Questions Asked</p>
+            </div>
+          </div>
+          <div class="stat-card card-purple">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-sessions">0</p>
+              <p class="stat-label">Study Sessions</p>
+            </div>
+          </div>
+          <div class="stat-card card-green">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-topics">0</p>
+              <p class="stat-label">Topics Explored</p>
+            </div>
+          </div>
+          <div class="stat-card card-orange">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-strong">—</p>
+              <p class="stat-label">Strongest Subject</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Columns -->
+        <div class="dash-grid">
+          <!-- Subject Progress -->
+          <div class="dash-card">
+            <h3 class="dash-card-title">📈 Subject Progress</h3>
+            <div id="subject-progress-bars" class="progress-bars"></div>
+          </div>
+
+          <!-- Personalized Suggestions -->
+          <div class="dash-card">
+            <h3 class="dash-card-title">💡 Suggested Practice</h3>
+            <div id="suggestions-list" class="suggestions-list">
+              <p class="loading-text">Loading suggestions...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="dash-card mt-4">
+          <h3 class="dash-card-title">🚀 Quick Start</h3>
+          <div class="quick-start-grid" id="quick-start-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CHAT PAGE ──────────────────────────────────────── -->
+      <div id="page-chat" class="page">
+        <div class="chat-layout">
+          <!-- Chat Header -->
+          <div class="chat-header">
+            <div class="chat-header-info">
+              <h3 id="chat-session-title">New Chat</h3>
+              <p id="chat-subject-label" class="chat-subject-badge">All Subjects</p>
+            </div>
+            <div class="chat-header-actions">
+              <select id="subject-select" class="subject-select" onchange="onSubjectChange(this.value)">
+                <option value="">All Subjects</option>
+                <option value="history">🏛️ History</option>
+                <option value="polity">⚖️ Polity</option>
+                <option value="geography">🌏 Geography</option>
+                <option value="economics">📊 Economics</option>
+                <option value="gk">🧠 General Knowledge</option>
+              </select>
+              <button class="btn-icon" onclick="startNewChat()" title="New Chat">🗒️</button>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-welcome">
+              <div class="chat-welcome-icon">🤖</div>
+              <h3>Hello! I'm your AI Tutor</h3>
+              <p>Ask me anything about History, Political Science, Geography, Economics, or General Knowledge from Classes 6-10. I'll
+                answer using NCERT content.</p>
+              <div class="chat-starter-btns">
+                <button class="starter-btn"
+                  onclick="sendStarterQuestion('What is the importance of the Constitution of India?')">⚖️ What is the
+                  Constitution?</button>
+                <button class="starter-btn" onclick="sendStarterQuestion('Explain the Mughal Empire in India.')">🏛️
+                  Mughal Empire</button>
+                <button class="starter-btn"
+                  onclick="sendStarterQuestion('What are the major physical features of India?')">🌏 Physical
+                  Features</button>
+                <button class="starter-btn" onclick="sendStarterQuestion('What is GDP and why is it important?')">📊
+                 What is GDP ?</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sources Panel (collapsible) -->
+          <div id="sources-panel" class="sources-panel hidden">
+            <div class="sources-header" onclick="toggleSources()">
+              <span>📎 Retrieved Sources</span>
+              <span id="sources-toggle-icon">▲</span>
+            </div>
+            <div id="sources-content" class="sources-content"></div>
+          </div>
+
+          <!-- Input -->
+          <div class="chat-input-area">
+            <div class="chat-input-wrap">
+              <textarea id="chat-input" class="chat-textarea" placeholder="Ask your NCERT question here..." rows="1"
+                onkeydown="handleChatKeydown(event)" oninput="autoResize(this)"></textarea>
+              <button class="btn-send" id="send-btn" onclick="sendMessage()" title="Send (Enter)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+            <p class="chat-disclaimer">Answers are based on NCERT content only • Classes 6–10</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HISTORY PAGE ───────────────────────────────────── -->
+      <div id="page-history" class="page">
+        <div class="page-header">
+          <h2 class="page-title">📜 Chat History</h2>
+          <p class="page-sub">All your past study sessions</p>
+        </div>
+        <div id="history-list" class="history-list">
+          <div class="history-empty">
+            <div class="empty-icon">💬</div>
+            <p>No chat history yet. Start asking questions!</p>
+            <button class="btn-primary" onclick="showPage('chat')">Start Chatting</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUBJECTS PAGE ─────────────────────────────────── -->
+      <div id="page-subjects" class="page">
+        <div class="page-header">
+          <h2 class="page-title">📖 Subjects</h2>
+          <p class="page-sub">NCERT Social Studies — Classes 6 to 10</p>
+        </div>
+        <div class="subjects-grid" id="subjects-grid"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+
+</html>
